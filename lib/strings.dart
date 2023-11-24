@@ -13,7 +13,18 @@ class Strings {
   static const String enterUserNameText = "User";
   static const String createChatText = "Create chat";
 
+  static const String loginToAccountText = "Login to your account";
+  static const String nicknameText = "Nickname";
+  static const String nicknameExampleHintText = "@example123";
+  static const String passwordText = "Password";
+  static const String passwordExampleHintText = "Password...";
+  static const String loginText = "Login";
+  static const String doNotHaveAccountText = "Don't have an account? ";
+  static const String registerNowText = "Register now!";
+
 
   static const String enterValidNicknameText = "Enter a valid nickname";
+  static const String incorrectNicknameText = "Incorrect nickname";
+  static const String incorrectPasswordText = "Incorrect password";
 
 }
