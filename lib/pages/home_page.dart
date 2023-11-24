@@ -69,7 +69,9 @@ class _HomePageState extends State<HomePage> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: IconButton(
-              onPressed: () {}, // TODO: Сделать функционал кнопки добавления чата
+              onPressed: () {
+                Navigator.pushNamed(context, '/add_new_chat');
+              },
               icon: const Icon(
                 Icons.add,
                 size: 35,
