@@ -4,8 +4,8 @@ import 'package:private_messenger/style/colors.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 
-class LoginPage extends StatelessWidget {
-  const LoginPage({super.key});
+class SignUpPage extends StatelessWidget {
+  const SignUpPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -19,13 +19,13 @@ class LoginPage extends StatelessWidget {
                 Center(
                   child: SvgPicture.asset(
                     "assets/logo.svg",
-                    width: 220,
-                    height: 220,
+                    width: 200,
+                    height: 200,
                   ),
                 ),
                 const Center(
                   child: Text(
-                    Strings.loginToAccountText,
+                    Strings.createNewAccountText,
                     style: TextStyle(
                       fontSize: 24,
                       color: Colors.white,
@@ -132,6 +132,56 @@ class LoginPage extends StatelessWidget {
                     ),
                   ),
                 ),
+                const SizedBox(height: 15,),
+
+                const Padding(
+                  padding: EdgeInsets.only(left: 5),
+                  child: Text(
+                    Strings.passwordAgainText,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10,),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        style: const TextStyle(
+                          color: MyColors.light1,
+                        ),
+                        decoration: InputDecoration(
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: const BorderSide(color: MyColors.grey1),
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          filled: true,
+                          fillColor: MyColors.dark1,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          hintText: Strings.passwordExampleHintText,
+                          hintStyle: const TextStyle(
+                            color: MyColors.grey1,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12, horizontal: 5),
+                  child: Text(
+                    Strings.incorrectPasswordText,
+                    style: TextStyle(
+                      color: MyColors.error,
+                      fontSize: 15,
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 40,),
 
 
@@ -150,10 +200,10 @@ class LoginPage extends StatelessWidget {
                       gotoMainPage(context);
                     },
                     child: const Text(
-                      Strings.loginText,
+                      Strings.registerText,
                       style: TextStyle(
                           fontSize: 24,
-                          
+
                           color: Colors.white
                       ),
                     ),
@@ -164,16 +214,16 @@ class LoginPage extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Text(
-                      Strings.doNotHaveAccountText,
+                      Strings.alreadyHaveAccountText,
                       style: TextStyle(
                         color: Colors.white,
                       ),
                     ),
                     TextButton(
                         onPressed: () {
-                          Navigator.pushReplacementNamed(context, "/signup");
+                          Navigator.pushReplacementNamed(context, "/login");
                         },
-                        child: const Text(Strings.registerNowText)
+                        child: const Text(Strings.loginNowText)
                     )
                   ],
                 )

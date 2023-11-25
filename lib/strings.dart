@@ -17,11 +17,16 @@ class Strings {
   static const String nicknameText = "Nickname";
   static const String nicknameExampleHintText = "@example123";
   static const String passwordText = "Password";
+  static const String passwordAgainText = "Repeat password";
   static const String passwordExampleHintText = "Password...";
   static const String loginText = "Login";
+  static const String registerText = "Register";
   static const String doNotHaveAccountText = "Don't have an account? ";
   static const String registerNowText = "Register now!";
 
+  static const String alreadyHaveAccountText = "Already have an account? ";
+  static const String loginNowText = "Login now!";
+  static const String createNewAccountText = "Create new account";
 
   static const String enterValidNicknameText = "Enter a valid nickname";
   static const String incorrectNicknameText = "Incorrect nickname";
