@@ -4,8 +4,28 @@ import 'package:private_messenger/style/colors.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+
+  bool showNicknameError = false;
+  bool showPasswordError = false;
+
+  final TextEditingController _nicknameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    showNicknameError = false;
+    showPasswordError = false;
+
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,6 +69,7 @@ class LoginPage extends StatelessWidget {
                   children: [
                     Expanded(
                       child: TextField(
+                        controller: _nicknameController,
                         style: const TextStyle(
                           color: MyColors.light1,
                         ),
@@ -72,15 +93,15 @@ class LoginPage extends StatelessWidget {
                   ],
                 ),
 
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12, horizontal: 5),
-                  child: Text(
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 5),
+                  child: showNicknameError ? const Text(
                     Strings.incorrectNicknameText,
                     style: TextStyle(
                       color: MyColors.error,
                       fontSize: 15,
                     ),
-                  ),
+                  ) : const Text(""),
                 ),
                 const SizedBox(height: 15,),
 
@@ -100,6 +121,8 @@ class LoginPage extends StatelessWidget {
                   children: [
                     Expanded(
                       child: TextField(
+                        controller: _passwordController,
+                        obscureText: true,
                         style: const TextStyle(
                           color: MyColors.light1,
                         ),
@@ -122,15 +145,15 @@ class LoginPage extends StatelessWidget {
                     ),
                   ],
                 ),
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12, horizontal: 5),
-                  child: Text(
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 5),
+                  child: showPasswordError ? const Text(
                     Strings.incorrectPasswordText,
                     style: TextStyle(
                       color: MyColors.error,
                       fontSize: 15,
                     ),
-                  ),
+                  ) : const Text(""),
                 ),
                 const SizedBox(height: 40,),
 
@@ -146,14 +169,13 @@ class LoginPage extends StatelessWidget {
                       ),
                     ),
                     onPressed: () {
-                      // TODO: Реализовать функцию проверки ника и пароля
-                      gotoMainPage(context);
+                      processInputData(context);
                     },
                     child: const Text(
                       Strings.loginText,
                       style: TextStyle(
                           fontSize: 24,
-                          
+
                           color: Colors.white
                       ),
                     ),
@@ -184,8 +206,57 @@ class LoginPage extends StatelessWidget {
       ),
     );
   }
+
+
+  void processInputData(BuildContext context) {
+    bool v1 = checkNicknameInput();
+    bool v2 = checkPasswordInput();
+    bool isInputCorrect = v1 && v2;
+
+
+    if (isInputCorrect) {
+      // TODO: Отправить данные на проверку на сервере
+      gotoMainPage(context);
+    }
+  }
+
+  bool checkNicknameInput() {
+    String text = _nicknameController.text;
+    final usernameRegex = RegExp(r'^@[a-zA-Z0-9_-]+$');
+
+    if (text.isNotEmpty && usernameRegex.hasMatch(text)) {
+      setState(() {
+        showNicknameError = false;
+      });
+      return true;
+    }
+    else {
+      setState(() {
+        showNicknameError = true;
+      });
+      return false;
+    }
+  }
+
+  bool checkPasswordInput() {
+    String text = _passwordController.text;
+
+    if (text.isNotEmpty && text.length >= 8 && !text.contains(" ")) {
+      setState(() {
+        showPasswordError = false;
+      });
+      return true;
+    }
+    else {
+      setState(() {
+        showPasswordError = true;
+      });
+      return false;
+    }
+  }
+
+  void gotoMainPage(BuildContext context) {
+    Navigator.pushReplacementNamed(context, "/home");
+  }
 }
 
-void gotoMainPage(BuildContext context) {
-  Navigator.pushReplacementNamed(context, "/home");
-}
