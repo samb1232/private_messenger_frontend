@@ -4,8 +4,31 @@ import 'package:private_messenger/style/colors.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 
-class SignUpPage extends StatelessWidget {
+class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
+
+  @override
+  State<SignUpPage> createState() => _SignUpPageState();
+}
+
+class _SignUpPageState extends State<SignUpPage> {
+
+  bool showNicknameError = false;
+  bool showPasswordError = false;
+  bool showPasswordAgainError = false;
+
+  final TextEditingController _nicknameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _passwordAgainController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    showNicknameError = false;
+    showPasswordError = false;
+    showPasswordAgainError = false;
+
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,6 +72,7 @@ class SignUpPage extends StatelessWidget {
                   children: [
                     Expanded(
                       child: TextField(
+                        controller: _nicknameController,
                         style: const TextStyle(
                           color: MyColors.light1,
                         ),
@@ -72,15 +96,15 @@ class SignUpPage extends StatelessWidget {
                   ],
                 ),
 
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12, horizontal: 5),
-                  child: Text(
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 5),
+                  child: showNicknameError ? const Text(
                     Strings.incorrectNicknameText,
                     style: TextStyle(
                       color: MyColors.error,
                       fontSize: 15,
                     ),
-                  ),
+                  ) : const Text(""),
                 ),
                 const SizedBox(height: 15,),
 
@@ -100,6 +124,8 @@ class SignUpPage extends StatelessWidget {
                   children: [
                     Expanded(
                       child: TextField(
+                        controller: _passwordController,
+                        obscureText: true,
                         style: const TextStyle(
                           color: MyColors.light1,
                         ),
@@ -122,15 +148,15 @@ class SignUpPage extends StatelessWidget {
                     ),
                   ],
                 ),
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12, horizontal: 5),
-                  child: Text(
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 5),
+                  child: showPasswordError ? const Text(
                     Strings.incorrectPasswordText,
                     style: TextStyle(
                       color: MyColors.error,
                       fontSize: 15,
                     ),
-                  ),
+                  ) : const Text(""),
                 ),
                 const SizedBox(height: 15,),
 
@@ -150,6 +176,8 @@ class SignUpPage extends StatelessWidget {
                   children: [
                     Expanded(
                       child: TextField(
+                        controller: _passwordAgainController,
+                        obscureText: true,
                         style: const TextStyle(
                           color: MyColors.light1,
                         ),
@@ -172,15 +200,15 @@ class SignUpPage extends StatelessWidget {
                     ),
                   ],
                 ),
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12, horizontal: 5),
-                  child: Text(
-                    Strings.incorrectPasswordText,
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 5),
+                  child: showPasswordAgainError ? const Text(
+                    Strings.incorrectPasswordAgainText,
                     style: TextStyle(
                       color: MyColors.error,
                       fontSize: 15,
                     ),
-                  ),
+                  ) : const Text(""),
                 ),
                 const SizedBox(height: 40,),
 
@@ -197,7 +225,7 @@ class SignUpPage extends StatelessWidget {
                     ),
                     onPressed: () {
                       // TODO: Реализовать функцию проверки ника и пароля
-                      gotoMainPage(context);
+                      processInputData(context);
                     },
                     child: const Text(
                       Strings.registerText,
@@ -234,8 +262,74 @@ class SignUpPage extends StatelessWidget {
       ),
     );
   }
-}
 
-void gotoMainPage(BuildContext context) {
-  Navigator.pushReplacementNamed(context, "/home");
+  void processInputData(BuildContext context) {
+    bool v1 = checkNicknameInput();
+    bool v2 = checkPasswordInput();
+    bool v3 = checkPasswordAgainInput();
+    bool isInputCorrect = v1 && v2 && v3;
+
+
+    if (isInputCorrect) {
+      // TODO: Отправить данные на проверку на сервере
+      gotoMainPage(context);
+    }
+  }
+
+  bool checkNicknameInput() {
+    String text = _nicknameController.text;
+    final usernameRegex = RegExp(r'^@[a-zA-Z0-9_-]+$');
+
+    if (text.isNotEmpty && usernameRegex.hasMatch(text)) {
+      setState(() {
+        showNicknameError = false;
+      });
+      return true;
+    }
+    else {
+      setState(() {
+        showNicknameError = true;
+      });
+      return false;
+    }
+  }
+
+  bool checkPasswordInput() {
+    String text = _passwordController.text;
+
+    if (text.isNotEmpty && text.length >= 8 && !text.contains(" ")) {
+      setState(() {
+        showPasswordError = false;
+      });
+      return true;
+    }
+    else {
+      setState(() {
+        showPasswordError = true;
+      });
+      return false;
+    }
+  }
+
+  bool checkPasswordAgainInput() {
+    String passwordText = _passwordController.text;
+    String passwordRepeatText = _passwordAgainController.text;
+
+    if (passwordText == passwordRepeatText) {
+      setState(() {
+        showPasswordAgainError = false;
+      });
+      return true;
+    }
+    else {
+      setState(() {
+        showPasswordAgainError = true;
+      });
+      return false;
+    }
+  }
+
+  void gotoMainPage(BuildContext context) {
+    Navigator.pushReplacementNamed(context, "/home");
+  }
 }

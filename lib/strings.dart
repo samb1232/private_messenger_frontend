@@ -31,5 +31,6 @@ class Strings {
   static const String enterValidNicknameText = "Enter a valid nickname";
   static const String incorrectNicknameText = "Incorrect nickname";
   static const String incorrectPasswordText = "Incorrect password";
+  static const String incorrectPasswordAgainText = "Passwords are not the same";
 
 }
