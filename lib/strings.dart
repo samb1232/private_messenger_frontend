@@ -7,15 +7,14 @@ class Strings {
   static const String messengerText = "Messenger";
   static const String searchBarHintText = "Search...";
   static const String messageHintText = "Message...";
-  static const String nicknameHintText = "Nickname...";
   static const String chatText = "Chat1";
   static const String addChatText = "Start a chat";
-  static const String enterUserNameText = "User";
+  static const String enterUserEmailText = "User email";
   static const String createChatText = "Create chat";
 
   static const String loginToAccountText = "Login to your account";
-  static const String nicknameText = "Nickname";
-  static const String nicknameExampleHintText = "@example123";
+  static const String emailText = "Email";
+  static const String emailExampleHintText = "example@gmail.com";
   static const String passwordText = "Password";
   static const String passwordAgainText = "Repeat password";
   static const String passwordExampleHintText = "Password...";
@@ -28,8 +27,8 @@ class Strings {
   static const String loginNowText = "Login now!";
   static const String createNewAccountText = "Create new account";
 
-  static const String enterValidNicknameText = "Enter a valid nickname";
-  static const String incorrectNicknameText = "Incorrect nickname";
+  static const String enterValidEmailText = "Enter a valid email";
+  static const String incorrectEmailText = "Incorrect email";
   static const String incorrectPasswordText = "Incorrect password";
   static const String incorrectPasswordAgainText = "Passwords are not the same";
 

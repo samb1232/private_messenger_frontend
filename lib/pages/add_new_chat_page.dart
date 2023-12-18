@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:private_messenger/services/auth_service.dart';
 import 'package:private_messenger/strings.dart';
 import 'package:private_messenger/style/colors.dart';
+import 'package:provider/provider.dart';
 
 class AddNewChatPage extends StatefulWidget {
   const AddNewChatPage({super.key});
@@ -10,7 +12,10 @@ class AddNewChatPage extends StatefulWidget {
 }
 
 class _AddNewChatPageState extends State<AddNewChatPage> {
+  
+  final TextEditingController _emailController = TextEditingController();
 
+  bool showEmailError = false;
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +34,7 @@ class _AddNewChatPageState extends State<AddNewChatPage> {
             const Padding(
               padding: EdgeInsets.only(left: 5),
               child: Text(
-                Strings.enterUserNameText,
+                Strings.enterUserEmailText,
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 18,
@@ -42,6 +47,7 @@ class _AddNewChatPageState extends State<AddNewChatPage> {
               children: [
                 Expanded(
                   child: TextField(
+                    controller: _emailController,
                     style: const TextStyle(
                       color: MyColors.light1,
                     ),
@@ -55,7 +61,7 @@ class _AddNewChatPageState extends State<AddNewChatPage> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
                       ),
-                      hintText: Strings.nicknameHintText,
+                      hintText: Strings.emailExampleHintText,
                       hintStyle: const TextStyle(
                         color: MyColors.grey1,
                       ),
@@ -64,15 +70,15 @@ class _AddNewChatPageState extends State<AddNewChatPage> {
                 ),
               ],
             ),
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 12, horizontal: 5),
-              child: Text(
-                Strings.enterValidNicknameText,
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 5),
+              child: showEmailError ? const Text(
+                Strings.incorrectEmailText,
                 style: TextStyle(
                   color: MyColors.error,
                   fontSize: 15,
                 ),
-              ),
+              ) : const Text(""),
             ),
             const SizedBox(height: 60,),
             SizedBox(
@@ -86,8 +92,7 @@ class _AddNewChatPageState extends State<AddNewChatPage> {
                   ),
                 ),
                 onPressed: () {
-                  // TODO: Реализовать функцию проверки никнейма
-                  // TODO: Реализовать функцию добавления нового чата
+                  processInputData(context);
                 },
                 child: const Text(
                   Strings.createChatText,
@@ -102,5 +107,36 @@ class _AddNewChatPageState extends State<AddNewChatPage> {
         ),
       ),
     );
+  }
+
+  void processInputData(BuildContext context) async {
+    bool isInputCorrect = checkEmailInput();
+
+
+    if (isInputCorrect) {
+      addNewChat();
+    }
+  }
+  
+  bool checkEmailInput() {
+    String text = _emailController.text;
+    final usernameRegex = RegExp(r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$');
+
+    if (text.isNotEmpty && usernameRegex.hasMatch(text)) {
+      setState(() {
+        showEmailError = false;
+      });
+      return true;
+    }
+    else {
+      setState(() {
+        showEmailError = true;
+      });
+      return false;
+    }
+  }
+
+  void addNewChat() {
+    // TODO: Реализовать функцию добавления нового чата
   }
 }

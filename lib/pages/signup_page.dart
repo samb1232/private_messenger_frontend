@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:private_messenger/strings.dart';
 import 'package:private_messenger/style/colors.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:provider/provider.dart';
+
+import '../services/auth_service.dart';
 
 
 class SignUpPage extends StatefulWidget {
@@ -13,18 +16,18 @@ class SignUpPage extends StatefulWidget {
 
 class _SignUpPageState extends State<SignUpPage> {
 
-  bool showNicknameError = false;
+  bool showEmailError = false;
   bool showPasswordError = false;
   bool showPasswordAgainError = false;
 
-  final TextEditingController _nicknameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _passwordAgainController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    showNicknameError = false;
+    showEmailError = false;
     showPasswordError = false;
     showPasswordAgainError = false;
 
@@ -59,7 +62,7 @@ class _SignUpPageState extends State<SignUpPage> {
                 const Padding(
                   padding: EdgeInsets.only(left: 5),
                   child: Text(
-                    Strings.nicknameText,
+                    Strings.emailText,
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 18,
@@ -72,7 +75,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   children: [
                     Expanded(
                       child: TextField(
-                        controller: _nicknameController,
+                        controller: _emailController,
                         style: const TextStyle(
                           color: MyColors.light1,
                         ),
@@ -86,7 +89,7 @@ class _SignUpPageState extends State<SignUpPage> {
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(15),
                           ),
-                          hintText: Strings.nicknameExampleHintText,
+                          hintText: Strings.emailExampleHintText,
                           hintStyle: const TextStyle(
                             color: MyColors.grey1,
                           ),
@@ -98,8 +101,8 @@ class _SignUpPageState extends State<SignUpPage> {
 
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 5),
-                  child: showNicknameError ? const Text(
-                    Strings.incorrectNicknameText,
+                  child: showEmailError ? const Text(
+                    Strings.incorrectEmailText,
                     style: TextStyle(
                       color: MyColors.error,
                       fontSize: 15,
@@ -263,32 +266,40 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 
-  void processInputData(BuildContext context) {
+  void processInputData(BuildContext context) async {
     bool v1 = checkNicknameInput();
     bool v2 = checkPasswordInput();
     bool v3 = checkPasswordAgainInput();
     bool isInputCorrect = v1 && v2 && v3;
 
 
-    if (isInputCorrect) {
-      // TODO: Отправить данные на проверку на сервере
-      gotoMainPage(context);
+      if (isInputCorrect) {
+        final authService = Provider.of<AuthService>(context, listen: false);
+
+        try {
+          await authService.signUpWithEmailAndPassword(_emailController.text, _passwordController.text);
+
+          if (!context.mounted) return;
+          gotoMainPage(context);
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+        }
+      }
     }
-  }
 
   bool checkNicknameInput() {
-    String text = _nicknameController.text;
-    final usernameRegex = RegExp(r'^@[a-zA-Z0-9_-]+$');
+    String text = _emailController.text;
+    final usernameRegex = RegExp(r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$');
 
     if (text.isNotEmpty && usernameRegex.hasMatch(text)) {
       setState(() {
-        showNicknameError = false;
+        showEmailError = false;
       });
       return true;
     }
     else {
       setState(() {
-        showNicknameError = true;
+        showEmailError = true;
       });
       return false;
     }
@@ -297,7 +308,7 @@ class _SignUpPageState extends State<SignUpPage> {
   bool checkPasswordInput() {
     String text = _passwordController.text;
 
-    if (text.isNotEmpty && text.length >= 8 && !text.contains(" ")) {
+    if (text.isNotEmpty && text.length >= 4 && !text.contains(" ")) {
       setState(() {
         showPasswordError = false;
       });

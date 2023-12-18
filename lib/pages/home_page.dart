@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:private_messenger/classes/chat_item.dart';
+import 'package:private_messenger/services/auth_service.dart';
 import 'package:private_messenger/strings.dart';
 import 'package:private_messenger/style/colors.dart';
+import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -64,6 +66,12 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         toolbarHeight: 70,
         backgroundColor: MyColors.dark1,
+        leading: IconButton(
+          icon: const Icon(Icons.logout_rounded),
+          onPressed: () {
+            logOut(context);
+          },
+        ),
         title: const Text(Strings.messengerText),
         actions: [
           Padding(
@@ -226,5 +234,11 @@ class _HomePageState extends State<HomePage> {
 
   void _openChat(int chatId) {
     Navigator.pushNamed(context, "/chat");
+  }
+
+  void logOut(BuildContext context) {
+    final authService = Provider.of<AuthService>(context, listen: false);
+    authService.signOut();
+    Navigator.pushReplacementNamed(context, "/login");
   }
 }
