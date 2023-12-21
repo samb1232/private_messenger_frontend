@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:private_messenger/classes/chat_item.dart';
 import 'package:private_messenger/services/auth_service.dart';
@@ -14,50 +16,66 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
 
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+
   static List<ChatItem> chatItemsArr = [
-    ChatItem(
-        1,
-        null,
-        "Chat1",
-        "Hello. Got some money?",
-        DateTime(2023, 11, 11, 0, 30),
-        1
-    ),
-    ChatItem(
-        2,
-        null,
-        "Chat2",
-        "Lorem Imsum is simply Lorem Imsum is simply Lorem Imsum is simply",
-        DateTime(2023, 11, 9, 10, 0),
-        110
-    ),
-    ChatItem(
-        3,
-        null,
-        "Chat3",
-        "Yes. I do",
-        DateTime(2023, 10, 10, 10, 0),
-        0
-    ),
-    ChatItem(
-        4,
-        null,
-        "Chat4",
-        "Bye. Good night",
-        DateTime(2021, 10, 10, 10, 0),
-        0
-    ),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+
+    FirebaseFirestore.instance.collection('chats')
+        .where('participants', arrayContains: _auth.currentUser!.email)
+        .snapshots().listen((QuerySnapshot<Map<String, dynamic>> event) {
+          _getUserItemsFromDB(event.docs);
+    });
+  }
+
+  void _getUserItemsFromDB(List<QueryDocumentSnapshot<Map<String, dynamic>>> docs) {
+    List<ChatItem> newChatItems = [];
+    ChatItem newItem;
+    for (QueryDocumentSnapshot doc in docs) {
+      newItem = ChatItem(
+          id: doc.id,
+          chatEmail: doc["participants"][0] == _auth.currentUser!.email
+              ? doc["participants"][1] : doc["participants"][0],
+          chatLastMessage: doc['lastMessage'],
+          lastMessageDate: doc['lastMessageDate'].toDate()
+      );
+      newChatItems.add(newItem);
+    }
+
+    chatItemsArr = newChatItems;
+    updateList();
+
+  }
 
 
   List<ChatItem> displayList = List.from(chatItemsArr);
   void updateFilterList(String value) {
     setState(() {
       displayList = chatItemsArr.where(
-              (element) => element.chatName.toLowerCase().contains(value.toLowerCase())
+              (element) => element.chatEmail.toLowerCase().contains(value.toLowerCase())
       ).toList();
+      displayList.sort((ChatItem a, ChatItem b) {
+        return b.lastMessageDate.compareTo(a.lastMessageDate);
+      });
     });
   }
+
+  void updateList() {
+    setState(() {
+      displayList = List.from(chatItemsArr);
+      displayList.sort((ChatItem a, ChatItem b) {
+        return b.lastMessageDate.compareTo(a.lastMessageDate);
+      });
+    });
+  }
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +90,23 @@ class _HomePageState extends State<HomePage> {
             logOut(context);
           },
         ),
-        title: const Text(Strings.messengerText),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              Strings.messengerText,
+              style: TextStyle(
+                  fontSize: 22
+              ),
+            ),
+            Text(
+              _auth.currentUser?.email??"",
+              style: const TextStyle(
+                fontSize: 16
+              ),
+            ),
+          ],
+        ),
         actions: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -119,7 +153,20 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           Expanded(
-              child: ListView.builder(
+              child: displayList.isEmpty
+                  ? const Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      SizedBox(height: 15,),
+                      Center(child: Text(
+                Strings.emptyChatsListText,
+                style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 22
+                ),)),
+                    ],
+                  )
+                  : ListView.builder(
                 itemCount: displayList.length,
                 itemBuilder: (BuildContext context, int index) {
                   return Container(
@@ -127,7 +174,7 @@ class _HomePageState extends State<HomePage> {
                     width: double.infinity,
                     color: (index % 2 == 0) ? MyColors.dark3 : MyColors.dark2,
                     child: ListTile(
-                      onTap: () => _openChat(displayList[index].id),
+                      onTap: () => _openChat(),
                       leading: const CircleAvatar(
                         backgroundImage: AssetImage("assets/profile_picture.jpg"),
                         radius: 35,
@@ -140,7 +187,7 @@ class _HomePageState extends State<HomePage> {
                             children: [
                               Expanded(
                                 child: Text(
-                                    displayList[index].chatName,
+                                    displayList[index].chatEmail,
                                     overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(
                                       color: MyColors.light1,
@@ -159,8 +206,8 @@ class _HomePageState extends State<HomePage> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              _getChatLastMessage(displayList[index].chatLastMessage),
-                              _getChatUnreadMessagesBox(displayList[index].unreadMessagesNumber)
+                              _getChatLastMessageWidget(displayList[index].chatLastMessage),
+                              Container() // TODO: реализовать отображение непрочитаннных сообщений
                             ],
                           )
                         ],
@@ -193,8 +240,8 @@ class _HomePageState extends State<HomePage> {
     return "${Strings.months[date.month-1]} ${date.day}";
   }
 
-  Widget _getChatUnreadMessagesBox(int? numberOfUnreadMessages) {
-    if (numberOfUnreadMessages == null || numberOfUnreadMessages == 0) {
+  Widget _getChatUnreadMessagesBoxWidget(bool hasUnreadMessages) {
+    if (!hasUnreadMessages) {
       return const SizedBox();
     }
     return Container(
@@ -206,18 +253,10 @@ class _HomePageState extends State<HomePage> {
       constraints: const BoxConstraints(
         minWidth: 26,
       ),
-      child: Center(
-        child: Text(
-          "$numberOfUnreadMessages",
-          style: const TextStyle(
-            color: MyColors.light1,
-          ),
-        ),
-      ),
     );
   }
 
-  Widget _getChatLastMessage (String? lastMessage) {
+  Widget _getChatLastMessageWidget (String? lastMessage) {
     if (lastMessage == null) {
       return const SizedBox();
     }
@@ -232,7 +271,8 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _openChat(int chatId) {
+  void _openChat() {
+    // TODO: реализовать функцию открытия чата
     Navigator.pushNamed(context, "/chat");
   }
 

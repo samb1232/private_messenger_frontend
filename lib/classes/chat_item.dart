@@ -1,19 +1,13 @@
-import 'package:flutter/material.dart';
-
 class ChatItem {
-  int id;
-  Image? chatImage;
-  String chatName;
+  String id;
+  String chatEmail;
   String? chatLastMessage;
   DateTime lastMessageDate;
-  int? unreadMessagesNumber;
 
-  ChatItem(
-      this.id,
-      this.chatImage,
-      this.chatName,
-      this.chatLastMessage,
-      this.lastMessageDate,
-      this.unreadMessagesNumber
-      );
+  ChatItem({
+    required this.id,
+    required this.chatEmail,
+    required this.chatLastMessage,
+    required this.lastMessageDate,
+  });
 }

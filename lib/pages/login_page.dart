@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:private_messenger/configs.dart';
 import 'package:private_messenger/services/auth_service.dart';
 import 'package:private_messenger/strings.dart';
 import 'package:private_messenger/style/colors.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
-import 'package:web_socket_channel/io.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 
 
 class LoginPage extends StatefulWidget {

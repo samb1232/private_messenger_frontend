@@ -32,4 +32,10 @@ class Strings {
   static const String incorrectPasswordText = "Incorrect password";
   static const String incorrectPasswordAgainText = "Passwords are not the same";
 
+  static const String chatAlreadyExistsText = "Chat already exists with these user";
+  static const String cantCreateChatWithYourselfText = 'You can\'t create chat with yourself';
+
+  static const String userNotFoundText = "User not found";
+
+  static const String emptyChatsListText = "List of chats is empty";
 }

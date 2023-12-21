@@ -1,8 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:private_messenger/services/auth_service.dart';
+import 'package:private_messenger/services/chats_service.dart';
 import 'package:private_messenger/strings.dart';
 import 'package:private_messenger/style/colors.dart';
-import 'package:provider/provider.dart';
 
 class AddNewChatPage extends StatefulWidget {
   const AddNewChatPage({super.key});
@@ -14,6 +14,10 @@ class AddNewChatPage extends StatefulWidget {
 class _AddNewChatPageState extends State<AddNewChatPage> {
   
   final TextEditingController _emailController = TextEditingController();
+
+  final ChatsService _chatsService = ChatsService();
+
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   bool showEmailError = false;
 
@@ -112,9 +116,19 @@ class _AddNewChatPageState extends State<AddNewChatPage> {
   void processInputData(BuildContext context) async {
     bool isInputCorrect = checkEmailInput();
 
-
     if (isInputCorrect) {
-      addNewChat();
+      try {
+        await _chatsService.createChat(
+            user1email: _auth.currentUser!.email,
+            user2email: _emailController.text,
+            lastMessage: '',
+            lastMessageDate: DateTime.now()
+        );
+        if (!context.mounted) return;
+        gotoNewChat();
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
     }
   }
   
@@ -136,7 +150,8 @@ class _AddNewChatPageState extends State<AddNewChatPage> {
     }
   }
 
-  void addNewChat() {
-    // TODO: Реализовать функцию добавления нового чата
+  void gotoNewChat() {
+    // TODO: Реализовать функцию перехода нановый чат
+    Navigator.pushReplacementNamed(context, "/chat");
   }
 }
