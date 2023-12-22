@@ -140,7 +140,7 @@ class _HomePageState extends State<HomePage> {
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: IconButton(
               onPressed: () {
-                Navigator.pushNamed(context, '/add_new_chat');
+                Navigator.pushReplacementNamed(context, '/add_new_chat');
               },
               icon: const Icon(
                 Icons.add,
@@ -300,7 +300,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _openChat(String chatId, String interlocutorEmail) {
-    Navigator.pushNamed(context, "/chat",
+    Navigator.pushReplacementNamed(context, "/chat",
         arguments: {
       'chatId' : chatId,
       'interlocutorEmail': interlocutorEmail,

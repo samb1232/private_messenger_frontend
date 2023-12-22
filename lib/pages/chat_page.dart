@@ -74,6 +74,12 @@ class _ChatPageState extends State<ChatPage> {
       appBar: AppBar(
         toolbarHeight: 70,
         backgroundColor: MyColors.dark1,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pushReplacementNamed(context, "/home");
+          },
+        ),
         title: Text(interlocutorEmail),
         actions: [
           Padding(
