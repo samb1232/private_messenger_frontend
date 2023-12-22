@@ -1,9 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:private_messenger/services/chat_display_service.dart';
+import 'package:private_messenger/services/notification_service.dart';
 
-class ChatService extends ChangeNotifier {
+class ChatService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   final FirebaseAuth _auth = FirebaseAuth.instance;

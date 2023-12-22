@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:private_messenger/classes/chat_item.dart';
 import 'package:private_messenger/services/auth_service.dart';
+import 'package:private_messenger/services/notification_service.dart';
 import 'package:private_messenger/strings.dart';
 import 'package:private_messenger/style/colors.dart';
 import 'package:provider/provider.dart';
@@ -18,6 +19,7 @@ class _HomePageState extends State<HomePage> {
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
+  final NotificationService _notificationService = NotificationService();
 
   static List<ChatItem> chatItemsArr = [];
 
@@ -30,6 +32,26 @@ class _HomePageState extends State<HomePage> {
         .snapshots().listen((QuerySnapshot<Map<String, dynamic>> event) {
           _getUserItemsFromDB(event.docs);
     });
+
+    _notificationService.getNotificationsStream(_auth.currentUser!.email!)
+        .listen((DocumentSnapshot event) {
+          if (mounted) {
+            setState(() {
+              for (ChatItem item in chatItemsArr) {
+                try {
+                  item.hasUnreadMessages = event[item.chatId];
+                } catch (e) {
+                  item.hasUnreadMessages = false;
+                }
+              }
+            });
+          }
+
+
+    });
+
+
+
   }
 
   void _getUserItemsFromDB(List<QueryDocumentSnapshot<Map<String, dynamic>>> docs) {
@@ -41,7 +63,8 @@ class _HomePageState extends State<HomePage> {
           otherEmail: doc["participants"][0] == _auth.currentUser!.email
               ? doc["participants"][1] : doc["participants"][0],
           chatLastMessage: doc['lastMessage'],
-          lastMessageDate: doc['lastMessageDate'].toDate()
+          lastMessageDate: doc['lastMessageDate'].toDate(),
+          hasUnreadMessages: false
       );
       newChatItems.add(newItem);
     }
@@ -82,6 +105,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+
+
     return Scaffold(
       backgroundColor: MyColors.dark2,
       appBar: AppBar(
@@ -211,7 +236,7 @@ class _HomePageState extends State<HomePage> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               _getChatLastMessageWidget(displayList[index].chatLastMessage),
-                              Container() // TODO: реализовать отображение непрочитаннных сообщений
+                              _getChatUnreadMessagesBoxWidget(displayList[index].hasUnreadMessages)
                             ],
                           )
                         ],
@@ -250,12 +275,11 @@ class _HomePageState extends State<HomePage> {
     }
     return Container(
       padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
+      width: 24,
+      height: 24,
+      decoration: const BoxDecoration(
         color: MyColors.grey1,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      constraints: const BoxConstraints(
-        minWidth: 26,
+        shape: BoxShape.circle,
       ),
     );
   }
