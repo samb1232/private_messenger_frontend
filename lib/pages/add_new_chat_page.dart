@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:private_messenger/services/chat_display_service.dart';
@@ -118,14 +119,14 @@ class _AddNewChatPageState extends State<AddNewChatPage> {
 
     if (isInputCorrect) {
       try {
-        await _chatDisplayService.createChat(
+        DocumentReference newChatDoc = await _chatDisplayService.createChat(
             user1email: _auth.currentUser!.email,
             user2email: _emailController.text,
             lastMessage: '',
             lastMessageDate: DateTime.now()
         );
         if (!context.mounted) return;
-        gotoNewChat();
+        _openChat(newChatDoc.id, _emailController.text);
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
       }
@@ -150,8 +151,11 @@ class _AddNewChatPageState extends State<AddNewChatPage> {
     }
   }
 
-  void gotoNewChat() {
-    // TODO: Реализовать функцию перехода нановый чат
-    Navigator.pushReplacementNamed(context, "/chat");
+  void _openChat(String chatId, String interlocutorEmail) {
+    Navigator.pushNamed(context, "/chat",
+        arguments: {
+          'chatId' : chatId,
+          'interlocutorEmail': interlocutorEmail,
+        });
   }
 }

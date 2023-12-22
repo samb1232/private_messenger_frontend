@@ -5,7 +5,7 @@ import 'package:private_messenger/strings.dart';
 class ChatDisplayService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<void> createChat({
+  Future<DocumentReference<Map<String, dynamic>>> createChat({
     required String? user1email,
     required String? user2email,
     required String lastMessage,
@@ -45,7 +45,7 @@ class ChatDisplayService {
 
     if (validChats.isEmpty) {
       // Если чат не найден, создаем новый чат
-      await _firestore.collection('chats').add({
+      return await _firestore.collection('chats').add({
         'participants': [user1email, user2email],
         'lastMessage': lastMessage,
         'lastMessageDate': lastMessageDate,
