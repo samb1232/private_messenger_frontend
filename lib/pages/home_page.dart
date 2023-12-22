@@ -19,8 +19,7 @@ class _HomePageState extends State<HomePage> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
 
-  static List<ChatItem> chatItemsArr = [
-  ];
+  static List<ChatItem> chatItemsArr = [];
 
   @override
   void initState() {
@@ -38,8 +37,8 @@ class _HomePageState extends State<HomePage> {
     ChatItem newItem;
     for (QueryDocumentSnapshot doc in docs) {
       newItem = ChatItem(
-          id: doc.id,
-          chatEmail: doc["participants"][0] == _auth.currentUser!.email
+          chatId: doc.id,
+          otherEmail: doc["participants"][0] == _auth.currentUser!.email
               ? doc["participants"][1] : doc["participants"][0],
           chatLastMessage: doc['lastMessage'],
           lastMessageDate: doc['lastMessageDate'].toDate()
@@ -55,26 +54,30 @@ class _HomePageState extends State<HomePage> {
 
   List<ChatItem> displayList = List.from(chatItemsArr);
   void updateFilterList(String value) {
-    setState(() {
-      displayList = chatItemsArr.where(
-              (element) => element.chatEmail.toLowerCase().contains(value.toLowerCase())
-      ).toList();
-      displayList.sort((ChatItem a, ChatItem b) {
-        return b.lastMessageDate.compareTo(a.lastMessageDate);
+    if (mounted) {
+      setState(() {
+        displayList = chatItemsArr.where(
+                (element) => element.otherEmail.toLowerCase().contains(value.toLowerCase())
+        ).toList();
+        displayList.sort((ChatItem a, ChatItem b) {
+          return b.lastMessageDate.compareTo(a.lastMessageDate);
+        });
       });
-    });
+    }
+
   }
 
   void updateList() {
-    setState(() {
-      displayList = List.from(chatItemsArr);
-      displayList.sort((ChatItem a, ChatItem b) {
-        return b.lastMessageDate.compareTo(a.lastMessageDate);
+    if (mounted) {
+      setState(() {
+        displayList = List.from(chatItemsArr);
+        displayList.sort((ChatItem a, ChatItem b) {
+          return b.lastMessageDate.compareTo(a.lastMessageDate);
+        });
       });
-    });
+    }
+
   }
-
-
 
 
   @override
@@ -174,7 +177,8 @@ class _HomePageState extends State<HomePage> {
                     width: double.infinity,
                     color: (index % 2 == 0) ? MyColors.dark3 : MyColors.dark2,
                     child: ListTile(
-                      onTap: () => _openChat(),
+                      onTap: () => _openChat(displayList[index].chatId,
+                          displayList[index].otherEmail),
                       leading: const CircleAvatar(
                         backgroundImage: AssetImage("assets/profile_picture.jpg"),
                         radius: 35,
@@ -187,7 +191,7 @@ class _HomePageState extends State<HomePage> {
                             children: [
                               Expanded(
                                 child: Text(
-                                    displayList[index].chatEmail,
+                                    displayList[index].otherEmail,
                                     overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(
                                       color: MyColors.light1,
@@ -271,9 +275,12 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _openChat() {
-    // TODO: реализовать функцию открытия чата
-    Navigator.pushNamed(context, "/chat");
+  void _openChat(String chatId, String interlocutorEmail) {
+    Navigator.pushNamed(context, "/chat",
+        arguments: {
+      'chatId' : chatId,
+      'interlocutorEmail': interlocutorEmail,
+        });
   }
 
   void logOut(BuildContext context) {

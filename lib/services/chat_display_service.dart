@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:private_messenger/strings.dart';
 
 
-class ChatsService {
+class ChatDisplayService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Future<void> createChat({

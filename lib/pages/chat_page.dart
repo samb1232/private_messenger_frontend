@@ -1,5 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:private_messenger/classes/message_item.dart';
+import 'package:private_messenger/services/chat_service.dart';
 import 'package:private_messenger/strings.dart';
 import 'package:private_messenger/style/colors.dart';
 
@@ -12,48 +15,63 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> {
 
-  List<MessageItem> messagesArr = [
-    MessageItem(
-        0,
-        10,
-        "Hello",
-        DateTime(2023, 11, 11, 0, 05)
-    ),
-    MessageItem(
-        1,
-        -1,
-        "Hi",
-        DateTime(2023, 11, 11, 0, 06)
-    ),
-    MessageItem(
-        2,
-        10,
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit, "
-            "sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
-            " Ut enim ad minim veniam, quis nostrud exercitation "
-            "ullamco laboris nisi ut aliquip ex ea commodo consequat. "
-            "Duis aute irure dolor in reprehenderit in voluptate velit esse "
-            "cillum dolore eu fugiat nulla pariatur.",
-        DateTime(2023, 11, 11, 0, 07)
-    ),
-    MessageItem(
-        3,
-        -1,
-        "No please don't do that to me",
-        DateTime(2023, 11, 11, 0, 08)
-    ),
+  final TextEditingController _messageController = TextEditingController();
 
-  ].reversed.toList();
+
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final ChatService _chatService = ChatService();
+
+  List<MessageItem> messagesArr = [];
 
 
   @override
+  void initState() {
+    super.initState();
+
+  }
+
+  void _getMessagesFromDB(List<QueryDocumentSnapshot<Map<String, dynamic>>> docs) {
+    
+    List<MessageItem> newChatItems = [];
+    MessageItem newMessage;
+    for (QueryDocumentSnapshot doc in docs) {
+      newMessage = MessageItem(
+          senderEmail: doc['senderEmail'],
+          text: doc["messageText"],
+          sentDate: doc['sentDate'].toDate()
+      );
+      newChatItems.add(newMessage);
+    }
+
+    messagesArr = newChatItems;
+    if (mounted) {
+      setState(() {
+        messagesArr.sort((MessageItem a, MessageItem b) {
+          return b.sentDate.compareTo(a.sentDate);
+        });
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final Map<String, dynamic> args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+
+    String chatId = args['chatId'];
+    String interlocutorEmail = args['interlocutorEmail'];
+
+    FirebaseFirestore.instance.collection('messages')
+        .where('chatId', isEqualTo: chatId)
+        .snapshots().listen((QuerySnapshot<Map<String, dynamic>> event) {
+      _getMessagesFromDB(event.docs);
+    });
+
     return Scaffold(
       backgroundColor: MyColors.dark2,
       appBar: AppBar(
         toolbarHeight: 70,
         backgroundColor: MyColors.dark1,
-        title: const Text(Strings.chatText),
+        title: Text(interlocutorEmail),
         actions: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -77,10 +95,11 @@ class _ChatPageState extends State<ChatPage> {
                 reverse: true,
                 itemCount: messagesArr.length,
                 itemBuilder: (BuildContext context, int index) {
+                  bool isSender = messagesArr[index].senderEmail == _auth.currentUser!.email;
                   return Column(
                     children: [
                       Row(
-                        mainAxisAlignment: (messagesArr[index].senderId == -1)
+                        mainAxisAlignment: isSender
                             ? MainAxisAlignment.end : MainAxisAlignment.start,
                         children: [
                           Text(
@@ -95,27 +114,27 @@ class _ChatPageState extends State<ChatPage> {
                       ),
                       const Padding(padding: EdgeInsets.symmetric(vertical: 2)),
                       Row(
-                        mainAxisAlignment: (messagesArr[index].senderId == -1)
+                        mainAxisAlignment: isSender
                             ? MainAxisAlignment.end : MainAxisAlignment.start,
                         children: [
                           Container(
                             decoration: BoxDecoration(
-                              color: (messagesArr[index].senderId == -1)
+                              color: isSender
                                   ? MyColors.grey1 : MyColors.grey2,
                               borderRadius: BorderRadius.circular(12),
                             ),
                             constraints: const BoxConstraints(
-                              minWidth: 50,
-                              minHeight: 30,
-                              maxWidth: 250
+                                minWidth: 50,
+                                minHeight: 30,
+                                maxWidth: 250
                             ),
                             child: Padding(
                               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
                               child: Text(
                                 messagesArr[index].text,
                                 style: const TextStyle(
-                                  color: MyColors.light1,
-                                  fontSize: 20
+                                    color: MyColors.light1,
+                                    fontSize: 20
                                 ),
                               ),
                             ),
@@ -135,6 +154,7 @@ class _ChatPageState extends State<ChatPage> {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 7),
                     child: TextField(
+                      controller: _messageController,
                       style: const TextStyle(
                         color: MyColors.light1,
                       ),
@@ -165,7 +185,7 @@ class _ChatPageState extends State<ChatPage> {
                     color: MyColors.light1,
                     iconSize: 30,
                     onPressed: () {
-                      // TODO: Реализовать функцию отправки сообщения
+                      _sendMessage(chatId);
                     },
                   ),
                 )
@@ -175,6 +195,20 @@ class _ChatPageState extends State<ChatPage> {
         ),
       ),
     );
+  }
+
+
+  void _sendMessage(String chatId) {
+    String message = _messageController.text.trim();
+    if (message.isEmpty) return;
+    try {
+      _chatService.sendMessage(chatId, message);
+      _messageController.clear();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+    }
+
+
   }
 
   String _getMessageDate(DateTime date) {

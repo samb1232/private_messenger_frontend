@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:private_messenger/services/chats_service.dart';
+import 'package:private_messenger/services/chat_display_service.dart';
 import 'package:private_messenger/strings.dart';
 import 'package:private_messenger/style/colors.dart';
 
@@ -15,7 +15,7 @@ class _AddNewChatPageState extends State<AddNewChatPage> {
   
   final TextEditingController _emailController = TextEditingController();
 
-  final ChatsService _chatsService = ChatsService();
+  final ChatDisplayService _chatDisplayService = ChatDisplayService();
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -118,7 +118,7 @@ class _AddNewChatPageState extends State<AddNewChatPage> {
 
     if (isInputCorrect) {
       try {
-        await _chatsService.createChat(
+        await _chatDisplayService.createChat(
             user1email: _auth.currentUser!.email,
             user2email: _emailController.text,
             lastMessage: '',

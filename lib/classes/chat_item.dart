@@ -1,12 +1,12 @@
 class ChatItem {
-  String id;
-  String chatEmail;
+  String chatId;
+  String otherEmail;
   String? chatLastMessage;
   DateTime lastMessageDate;
 
   ChatItem({
-    required this.id,
-    required this.chatEmail,
+    required this.chatId,
+    required this.otherEmail,
     required this.chatLastMessage,
     required this.lastMessageDate,
   });
