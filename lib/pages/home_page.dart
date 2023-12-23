@@ -1,7 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:private_messenger/classes/chat_item.dart';
+import 'package:private_messenger/services/auth_service.dart';
 import 'package:private_messenger/strings.dart';
 import 'package:private_messenger/style/colors.dart';
+import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -12,65 +16,128 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
 
-  static List<ChatItem> chatItemsArr = [
-    ChatItem(
-        1,
-        null,
-        "Chat1",
-        "Hello. Got some money?",
-        DateTime(2023, 11, 11, 0, 30),
-        1
-    ),
-    ChatItem(
-        2,
-        null,
-        "Chat2",
-        "Lorem Imsum is simply Lorem Imsum is simply Lorem Imsum is simply",
-        DateTime(2023, 11, 9, 10, 0),
-        110
-    ),
-    ChatItem(
-        3,
-        null,
-        "Chat3",
-        "Yes. I do",
-        DateTime(2023, 10, 10, 10, 0),
-        0
-    ),
-    ChatItem(
-        4,
-        null,
-        "Chat4",
-        "Bye. Good night",
-        DateTime(2021, 10, 10, 10, 0),
-        0
-    ),
-  ];
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  // final NotificationService _notificationService = NotificationService();
+
+  static List<ChatItem> chatItemsArr = [];
+
+  @override
+  void initState() {
+    super.initState();
+
+    FirebaseFirestore.instance.collection('chats')
+        .where('participants', arrayContains: _auth.currentUser!.email)
+        .snapshots().listen((QuerySnapshot<Map<String, dynamic>> event) {
+          _getUserItemsFromDB(event.docs);
+    });
+
+    // _notificationService.getNotificationsStream(_auth.currentUser!.email!)
+    //     .listen((DocumentSnapshot event) {
+    //       if (mounted) {
+    //         setState(() {
+    //           for (ChatItem item in chatItemsArr) {
+    //             try {
+    //               item.hasUnreadMessages = event[item.chatId];
+    //             } catch (e) {
+    //               item.hasUnreadMessages = false;
+    //             }
+    //           }
+    //         });
+    //       }
+    // });
+
+
+
+  }
+
+  void _getUserItemsFromDB(List<QueryDocumentSnapshot<Map<String, dynamic>>> docs) {
+    List<ChatItem> newChatItems = [];
+    ChatItem newItem;
+    for (QueryDocumentSnapshot doc in docs) {
+      newItem = ChatItem(
+          chatId: doc.id,
+          otherEmail: doc["participants"][0] == _auth.currentUser!.email
+              ? doc["participants"][1] : doc["participants"][0],
+          chatLastMessage: doc['lastMessage'],
+          lastMessageDate: doc['lastMessageDate'].toDate(),
+          hasUnreadMessages: false
+      );
+      newChatItems.add(newItem);
+    }
+
+    chatItemsArr = newChatItems;
+    updateList();
+
+  }
 
 
   List<ChatItem> displayList = List.from(chatItemsArr);
   void updateFilterList(String value) {
-    setState(() {
-      displayList = chatItemsArr.where(
-              (element) => element.chatName.toLowerCase().contains(value.toLowerCase())
-      ).toList();
-    });
+    if (mounted) {
+      setState(() {
+        displayList = chatItemsArr.where(
+                (element) => element.otherEmail.toLowerCase().contains(value.toLowerCase())
+        ).toList();
+        displayList.sort((ChatItem a, ChatItem b) {
+          return b.lastMessageDate.compareTo(a.lastMessageDate);
+        });
+      });
+    }
+
   }
+
+  void updateList() {
+    if (mounted) {
+      setState(() {
+        displayList = List.from(chatItemsArr);
+        displayList.sort((ChatItem a, ChatItem b) {
+          return b.lastMessageDate.compareTo(a.lastMessageDate);
+        });
+      });
+    }
+
+  }
+
 
   @override
   Widget build(BuildContext context) {
+
+
     return Scaffold(
       backgroundColor: MyColors.dark2,
       appBar: AppBar(
         toolbarHeight: 70,
         backgroundColor: MyColors.dark1,
-        title: const Text(Strings.messengerText),
+        leading: IconButton(
+          icon: const Icon(Icons.logout_rounded),
+          onPressed: () {
+            logOut(context);
+          },
+        ),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              Strings.messengerText,
+              style: TextStyle(
+                  fontSize: 22
+              ),
+            ),
+            Text(
+              _auth.currentUser?.email??"",
+              style: const TextStyle(
+                fontSize: 16
+              ),
+            ),
+          ],
+        ),
         actions: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: IconButton(
               onPressed: () {
-                Navigator.pushNamed(context, '/add_new_chat');
+                Navigator.pushReplacementNamed(context, '/add_new_chat');
               },
               icon: const Icon(
                 Icons.add,
@@ -111,7 +178,20 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           Expanded(
-              child: ListView.builder(
+              child: displayList.isEmpty
+                  ? const Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      SizedBox(height: 15,),
+                      Center(child: Text(
+                Strings.emptyChatsListText,
+                style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 22
+                ),)),
+                    ],
+                  )
+                  : ListView.builder(
                 itemCount: displayList.length,
                 itemBuilder: (BuildContext context, int index) {
                   return Container(
@@ -119,7 +199,8 @@ class _HomePageState extends State<HomePage> {
                     width: double.infinity,
                     color: (index % 2 == 0) ? MyColors.dark3 : MyColors.dark2,
                     child: ListTile(
-                      onTap: () => _openChat(displayList[index].id),
+                      onTap: () => _openChat(displayList[index].chatId,
+                          displayList[index].otherEmail),
                       leading: const CircleAvatar(
                         backgroundImage: AssetImage("assets/profile_picture.jpg"),
                         radius: 35,
@@ -132,7 +213,7 @@ class _HomePageState extends State<HomePage> {
                             children: [
                               Expanded(
                                 child: Text(
-                                    displayList[index].chatName,
+                                    displayList[index].otherEmail,
                                     overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(
                                       color: MyColors.light1,
@@ -151,8 +232,8 @@ class _HomePageState extends State<HomePage> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              _getChatLastMessage(displayList[index].chatLastMessage),
-                              _getChatUnreadMessagesBox(displayList[index].unreadMessagesNumber)
+                              _getChatLastMessageWidget(displayList[index].chatLastMessage),
+                              _getChatUnreadMessagesBoxWidget(displayList[index].hasUnreadMessages)
                             ],
                           )
                         ],
@@ -185,31 +266,22 @@ class _HomePageState extends State<HomePage> {
     return "${Strings.months[date.month-1]} ${date.day}";
   }
 
-  Widget _getChatUnreadMessagesBox(int? numberOfUnreadMessages) {
-    if (numberOfUnreadMessages == null || numberOfUnreadMessages == 0) {
+  Widget _getChatUnreadMessagesBoxWidget(bool hasUnreadMessages) {
+    if (!hasUnreadMessages) {
       return const SizedBox();
     }
     return Container(
       padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
+      width: 24,
+      height: 24,
+      decoration: const BoxDecoration(
         color: MyColors.grey1,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      constraints: const BoxConstraints(
-        minWidth: 26,
-      ),
-      child: Center(
-        child: Text(
-          "$numberOfUnreadMessages",
-          style: const TextStyle(
-            color: MyColors.light1,
-          ),
-        ),
+        shape: BoxShape.circle,
       ),
     );
   }
 
-  Widget _getChatLastMessage (String? lastMessage) {
+  Widget _getChatLastMessageWidget (String? lastMessage) {
     if (lastMessage == null) {
       return const SizedBox();
     }
@@ -224,7 +296,17 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _openChat(int chatId) {
-    Navigator.pushNamed(context, "/chat");
+  void _openChat(String chatId, String interlocutorEmail) {
+    Navigator.pushReplacementNamed(context, "/chat",
+        arguments: {
+      'chatId' : chatId,
+      'interlocutorEmail': interlocutorEmail,
+        });
+  }
+
+  void logOut(BuildContext context) {
+    final authService = Provider.of<AuthService>(context, listen: false);
+    authService.signOut();
+    Navigator.pushReplacementNamed(context, "/login");
   }
 }
