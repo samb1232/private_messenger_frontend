@@ -4,13 +4,13 @@ Frontend of project Private Messenger
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+Follow these steps to set up and run the Private Messenger on your machine:
 
-A few resources to get you started if this is your first Flutter project:
+1. Download .apk file from release folder.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+2. Install .apk file on your android machine.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+
+## License
+
+This project is licensed under the GNU General Public License v3.0 - see the LICENSE file for details.
