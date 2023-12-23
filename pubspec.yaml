@@ -47,6 +47,12 @@ dev_dependencies:
     sdk: flutter
   moor_generator:
   analyzer:
+  flutter_launcher_icons:
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/logo.png"
 
 
   # The "flutter_lints" package below contains a set of recommended lints to
@@ -71,6 +77,7 @@ flutter:
   assets:
     - assets/profile_picture.jpg
     - assets/logo.svg
+    - assets/logo.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
@@ -97,3 +104,4 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+

@@ -227,7 +227,6 @@ class _SignUpPageState extends State<SignUpPage> {
                       ),
                     ),
                     onPressed: () {
-                      // TODO: Реализовать функцию проверки ника и пароля
                       processInputData(context);
                     },
                     child: const Text(

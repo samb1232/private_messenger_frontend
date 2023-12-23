@@ -80,19 +80,6 @@ class _ChatPageState extends State<ChatPage> {
           },
         ),
         title: Text(interlocutorEmail),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: IconButton(
-              onPressed: () {},
-              // TODO: Сделать функционал кнопки действий над чатом
-              icon: const Icon(
-                Icons.more_vert,
-                size: 35,
-              ),
-            ),
-          ),
-        ],
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -221,7 +208,6 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   String _getMessageDate(DateTime date) {
-    // TODO: Сделать нормальное представление времени сообщения
     return "${date.hour.toString().padLeft(2, "0")}:${date.minute.toString().padLeft(2, "0")}";
   }
 
