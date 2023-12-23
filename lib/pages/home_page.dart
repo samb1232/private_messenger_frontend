@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:private_messenger/classes/chat_item.dart';
 import 'package:private_messenger/services/auth_service.dart';
-import 'package:private_messenger/services/notification_service.dart';
 import 'package:private_messenger/strings.dart';
 import 'package:private_messenger/style/colors.dart';
 import 'package:provider/provider.dart';
@@ -19,7 +18,7 @@ class _HomePageState extends State<HomePage> {
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  final NotificationService _notificationService = NotificationService();
+  // final NotificationService _notificationService = NotificationService();
 
   static List<ChatItem> chatItemsArr = [];
 
@@ -33,22 +32,20 @@ class _HomePageState extends State<HomePage> {
           _getUserItemsFromDB(event.docs);
     });
 
-    _notificationService.getNotificationsStream(_auth.currentUser!.email!)
-        .listen((DocumentSnapshot event) {
-          if (mounted) {
-            setState(() {
-              for (ChatItem item in chatItemsArr) {
-                try {
-                  item.hasUnreadMessages = event[item.chatId];
-                } catch (e) {
-                  item.hasUnreadMessages = false;
-                }
-              }
-            });
-          }
-
-
-    });
+    // _notificationService.getNotificationsStream(_auth.currentUser!.email!)
+    //     .listen((DocumentSnapshot event) {
+    //       if (mounted) {
+    //         setState(() {
+    //           for (ChatItem item in chatItemsArr) {
+    //             try {
+    //               item.hasUnreadMessages = event[item.chatId];
+    //             } catch (e) {
+    //               item.hasUnreadMessages = false;
+    //             }
+    //           }
+    //         });
+    //       }
+    // });
 
 
 
@@ -140,7 +137,7 @@ class _HomePageState extends State<HomePage> {
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: IconButton(
               onPressed: () {
-                Navigator.pushNamed(context, '/add_new_chat');
+                Navigator.pushReplacementNamed(context, '/add_new_chat');
               },
               icon: const Icon(
                 Icons.add,
@@ -300,7 +297,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _openChat(String chatId, String interlocutorEmail) {
-    Navigator.pushNamed(context, "/chat",
+    Navigator.pushReplacementNamed(context, "/chat",
         arguments: {
       'chatId' : chatId,
       'interlocutorEmail': interlocutorEmail,

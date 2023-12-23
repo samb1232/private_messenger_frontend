@@ -29,6 +29,12 @@ class _AddNewChatPageState extends State<AddNewChatPage> {
       appBar: AppBar(
         toolbarHeight: 70,
         backgroundColor: MyColors.dark1,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pushReplacementNamed(context, "/home");
+          },
+        ),
         title: const Text(Strings.addChatText),
       ),
       body: Padding(
