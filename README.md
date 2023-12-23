@@ -13,4 +13,4 @@ Follow these steps to set up and run the Private Messenger on your machine:
 
 ## License
 
-This project is licensed under the GNU General Public License v3.0 - see the LICENSE file for details.
+This project is licensed under the Apache v2.0 - see the LICENSE file for details.
