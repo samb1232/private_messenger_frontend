@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:private_messenger/classes/message_item.dart';
 import 'package:private_messenger/services/chat_service.dart';
-import 'package:private_messenger/services/notification_service.dart';
 import 'package:private_messenger/strings.dart';
 import 'package:private_messenger/style/colors.dart';
 
@@ -21,7 +20,7 @@ class _ChatPageState extends State<ChatPage> {
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final ChatService _chatService = ChatService();
-  final NotificationService _notificationService = NotificationService();
+  // final NotificationService _notificationService = NotificationService();
 
   List<MessageItem> messagesArr = [];
 
@@ -66,7 +65,7 @@ class _ChatPageState extends State<ChatPage> {
         .where('chatId', isEqualTo: chatId)
         .snapshots().listen((QuerySnapshot<Map<String, dynamic>> event) {
       _getMessagesFromDB(event.docs);
-      _notificationService.markChatAsRead(chatId);
+      //_notificationService.markChatAsRead(chatId);
     });
 
     return Scaffold(
@@ -212,7 +211,7 @@ class _ChatPageState extends State<ChatPage> {
     if (message.isEmpty) return;
     try {
       _chatService.sendMessage(chatId, message);
-      _notificationService.markChatAsUnread(recipientEmail, chatId);
+      // _notificationService.markChatAsUnread(recipientEmail, chatId);
       _messageController.clear();
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
